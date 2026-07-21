@@ -107,5 +107,69 @@ react/cjs/react-jsx-runtime.production.js:
    *)
 */
 ;(()=>{const periodType=label=>/上午/.test(label)?"morning":/中午/.test(label)?"noon":/下午/.test(label)?"afternoon":/傍晚/.test(label)?"evening":/晚上|今晚/.test(label)?"night":/全天|白天|途中/.test(label)?"day":"flex";const enhance=()=>{document.querySelectorAll(".plans article").forEach(article=>{const strong=article.querySelector(".plan-main strong"),small=article.querySelector(".plan-main small");if(!strong)return;const raw=strong.dataset.fullRoute||strong.textContent||"";strong.dataset.fullRoute=raw;if(/提前预约|提前购票|固定时段/.test(raw))strong.classList.add("reservation-required");else strong.classList.remove("reservation-required");const parts=raw.split("§"),plan=parts[0],divider=plan.indexOf("｜"),period=divider>0?plan.slice(0,divider):"行程",title=divider>0?plan.slice(divider+1):plan;if(strong.textContent!==title)strong.textContent=title;if(small)small.dataset.period=period;article.dataset.period=periodType(period);if(parts.length>1&&parts.slice(1).join("§").trim())article.dataset.route=parts.slice(1).join("§");else delete article.dataset.route})};new MutationObserver(enhance).observe(document.documentElement,{childList:true,subtree:true});enhance()})();</script>
+<style id="travel-photo-style">
+.day-visual{position:relative;height:188px;margin:18px 0 20px;border-radius:22px;overflow:hidden;background:#d7e0db;box-shadow:0 12px 30px #214e4320}.day-visual img{width:100%;height:100%;display:block;object-fit:cover}.day-visual:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 38%,rgba(18,39,34,.78))}.day-visual figcaption{position:absolute;z-index:1;left:17px;right:17px;bottom:15px;color:white}.day-visual figcaption small,.day-visual figcaption strong{display:block}.day-visual figcaption small{font-size:.62em;letter-spacing:.12em;opacity:.82;margin-bottom:4px}.day-visual figcaption strong{font:1.08em serif;letter-spacing:.04em;text-shadow:0 1px 8px #0006}.day-visual-badge{position:absolute;z-index:2;right:13px;top:13px;background:#fffefae8;color:var(--green);border-radius:999px;padding:6px 9px;font-size:.62em;font-weight:850;backdrop-filter:blur(8px)}
+.spot-photo{position:relative;height:122px;margin:-2px 0 12px;border-radius:10px;overflow:hidden;background:#d7e0db}.spot-photo img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .35s ease}.plan-main:hover .spot-photo img{transform:scale(1.025)}.spot-photo span{position:absolute;left:9px;bottom:8px;max-width:calc(100% - 18px);color:#fff;background:#173b32cc;border-radius:999px;padding:4px 8px;font-size:.62em;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;backdrop-filter:blur(5px)}
+.all-day-photo{position:relative;height:132px;margin:0 0 13px;border-radius:13px;overflow:hidden;background:#d7e0db}.all-day-photo img{width:100%;height:100%;display:block;object-fit:cover}.all-day-photo:after{content:"";position:absolute;inset:auto 0 0;height:52%;background:linear-gradient(transparent,#183c3399)}.all-day-photo span{position:absolute;z-index:1;left:12px;bottom:10px;color:#fff;font:900 .75em serif;letter-spacing:.03em}.photo-credit-note{display:flex;align-items:center;gap:6px;color:#84918c;font-size:.61em;margin:-8px 2px 16px}.photo-credit-note:before{content:"◌";color:#5f8a7d}
+@media(max-width:390px){.day-visual{height:166px;border-radius:19px}.spot-photo{height:108px}}
+@media(prefers-reduced-motion:reduce){.spot-photo img{transition:none}}
+</style>
+<script id="travel-photo-enhancement">
+;(()=>{
+  const visuals={
+    paris:{src:"assets/travel/paris.jpg",eyebrow:"PARIS · FRANCE",caption:"巴黎 · 艺术、花园与塞纳河"},
+    alsace:{src:"assets/travel/alsace.jpg",eyebrow:"ALSACE · FRANCE",caption:"阿尔萨斯 · 彩色老城与运河"},
+    switzerland:{src:"assets/travel/switzerland.jpg",eyebrow:"SWITZERLAND",caption:"瑞士 · 湖光、雪山与慢旅行"},
+    austria:{src:"assets/travel/austria.jpg",eyebrow:"AUSTRIA",caption:"奥地利 · 音乐、古城与咖啡馆"}
+  };
+  const pick=text=>{
+    text=(text||"").toLowerCase();
+    if(/维也纳|萨尔茨堡|哈尔施塔特|奥地利|mondsee|美泉宫|霍夫堡|graben/.test(text))return visuals.austria;
+    if(/卢塞恩|因特拉肯|伯尼根|瑞吉|采尔马特|马特洪峰|格林德沃|lauterbrunnen|瑞士/.test(text))return visuals.switzerland;
+    if(/斯特拉斯堡|科尔马|阿尔萨斯|小法兰西/.test(text))return visuals.alsace;
+    return visuals.paris;
+  };
+  const visualForActiveDay=()=>{
+    const buttons=[...document.querySelectorAll(".dates button")],index=buttons.findIndex(button=>button.classList.contains("on"));
+    if(index>=12)return visuals.austria;
+    if(index>=7)return visuals.switzerland;
+    if(index>=4)return visuals.alsace;
+    return visuals.paris;
+  };
+  const makeImage=(v,alt)=>{const img=document.createElement("img");img.src=v.src;img.alt=alt;img.loading="lazy";img.decoding="async";return img};
+  const addDayCover=()=>{
+    const title=document.querySelector(".content .title");
+    if(!title)return;
+    const heading=title.querySelector("h2")?.textContent||"欧洲旅行";
+    const v=visualForActiveDay();
+    let figure=title.parentElement.querySelector(":scope > .day-visual");
+    if(!figure){
+      figure=document.createElement("figure");figure.className="day-visual";
+      figure.append(makeImage(v,v.caption+"风景封面"));
+      const badge=document.createElement("span");badge.className="day-visual-badge";badge.textContent="今日风景";figure.append(badge);
+      const caption=document.createElement("figcaption");caption.innerHTML="<small></small><strong></strong>";figure.append(caption);
+      title.after(figure);
+    }
+    const img=figure.querySelector("img");if(img.getAttribute("src")!==v.src)img.src=v.src;img.alt=v.caption+"风景封面";
+    figure.querySelector("figcaption small").textContent=v.eyebrow;figure.querySelector("figcaption strong").textContent=v.caption;
+  };
+  const addPlanPhotos=()=>document.querySelectorAll(".plan-detail").forEach(detail=>{
+    if(detail.querySelector(".spot-photo"))return;
+    const article=detail.closest("article"),title=article?.querySelector(".plan-main strong")?.textContent||"今日景点";
+    if(/午餐|晚餐|早餐|抵达|火车|换乘|自由活动|休息|购物/.test(title))return;
+    const v=visualForActiveDay(),photo=document.createElement("div");photo.className="spot-photo";
+    photo.append(makeImage(v,title+"所在地区风景"));const label=document.createElement("span");label.textContent=title;photo.append(label);detail.prepend(photo);
+  });
+  const addAllDayPhotos=()=>document.querySelectorAll(".all-day-detail").forEach(detail=>{
+    if(detail.querySelector(".all-day-photo"))return;
+    const card=detail.closest(".all-day"),title=card?.querySelector(".all-day-head p strong")?.textContent||"欧洲旅程",country=card?.querySelector(".all-day-head p small")?.textContent||"";
+    const v=pick(title+" "+country),photo=document.createElement("div");photo.className="all-day-photo";photo.append(makeImage(v,title+"风景"));const label=document.createElement("span");label.textContent=title;photo.append(label);
+    const facts=detail.querySelector(".all-day-facts");facts?.after(photo);
+  });
+  let scheduled=false;
+  const enhance=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;addDayCover();addPlanPhotos();addAllDayPhotos()})};
+  new MutationObserver(enhance).observe(document.getElementById("root"),{childList:true,subtree:true,attributes:true,attributeFilter:["class"]});enhance();
+})();
+</script>
 </body>
 </html>
